@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suruh Akudus - Jasa & PPOB</title>
+    <title>Suruh Akudus - Jasa & PPOB Kudus</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -14,7 +14,6 @@
             --body-bg: #f0f2f5;
             --input-bg: #ffffff;
             --input-border: #dddddd;
-            --review-bg: #f9f9f9;
         }
 
         .dark-theme {
@@ -23,11 +22,10 @@
             --body-bg: #121212;
             --input-bg: #2d2d2d;
             --input-border: #444444;
-            --review-bg: #2d2d2d;
         }
 
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--body-bg); color: var(--text-color); padding: 15px; margin: 0; transition: 0.5s; }
-        .card { max-width: 450px; margin: auto; background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); position: relative; }
+        .card { max-width: 450px; margin: auto; background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: 0.5s; }
         
         h2 { text-align: center; color: var(--primary); margin: 0; }
         .subtitle { text-align: center; font-size: 13px; opacity: 0.8; margin-bottom: 15px; }
@@ -39,23 +37,23 @@
         label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
         select, input, textarea { width: 100%; padding: 12px; margin-top: 6px; border: 1px solid var(--input-border); border-radius: 10px; box-sizing: border-box; font-size: 15px; background: var(--input-bg); color: var(--text-color); }
         
+        .btn-lokasi { background: none; border: none; color: var(--primary); font-size: 12px; cursor: pointer; padding: 5px 0; font-weight: bold; }
+        .search-results { background: var(--input-bg); border: 1px solid var(--input-border); position: absolute; z-index: 1000; width: 100%; max-height: 150px; overflow-y: auto; display: none; border-radius: 8px; }
+        .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--input-border); font-size: 13px; }
+
         .box-tarif { background: rgba(37, 211, 102, 0.1); padding: 15px; border-radius: 12px; margin-top: 25px; text-align: center; border: 2px solid var(--success); }
         .total-harga { font-size: 30px; font-weight: bold; color: var(--success); display: block; }
 
         /* Review Section */
-        .review-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--input-border); }
-        .review-container { background: var(--review-bg); padding: 15px; border-radius: 12px; position: relative; min-height: 80px; overflow: hidden; }
-        .review-slide { display: none; text-align: center; animation: fadeIn 0.5s; }
-        .review-slide.active { display: block; }
-        .stars { color: #ffc107; font-size: 14px; margin-bottom: 5px; }
-        .review-text { font-style: italic; font-size: 13px; }
-        .review-author { font-weight: bold; font-size: 12px; margin-top: 5px; display: block; color: var(--primary); }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Loading Animation */
+        .review-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed var(--input-border); }
+        .review-form { background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .review-list { max-height: 250px; overflow-y: auto; }
+        .review-item { padding: 10px; border-bottom: 1px solid var(--input-border); margin-bottom: 10px; }
+        .rev-name { font-weight: bold; color: var(--primary); font-size: 14px; }
+        .rev-text { font-size: 13px; font-style: italic; margin: 3px 0; }
+        
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--success); border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--success); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #btn-pesan { width: 100%; padding: 16px; background-color: var(--success); color: white; border: none; border-radius: 12px; margin-top: 20px; font-size: 16px; cursor: pointer; font-weight: bold; }
@@ -66,12 +64,12 @@
 
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <p style="margin-top: 15px; font-weight: bold;" id="loading-text">Sekedap nggih...</p>
+    <p style="margin-top: 10px;" id="loading-text">Sekedap nggih...</p>
 </div>
 
 <div class="card">
     <h2>SURUH AKUDUS</h2>
-    <p class="subtitle" id="time-greeting">Cah Kudus Asli!</p>
+    <p class="subtitle" id="time-greeting">Cepat, Amanah, Cah Kudus!</p>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('jasa')">🛵 Jasa</button>
@@ -86,13 +84,23 @@
             <option value="Jastip" data-harga="2000">🛒 Jastip Belanja (Rp2.000/km)</option>
         </select>
 
-        <input type="text" id="jemput" placeholder="Desa Jemput..." oninput="cariAlamat('jemput')" style="margin-top:15px;">
-        <input type="text" id="tujuan" placeholder="Desa Tujuan..." oninput="cariAlamat('tujuan')" style="margin-top:10px;">
+        <div style="position: relative;">
+            <label>Desa Jemput:</label>
+            <input type="text" id="jemput" placeholder="Ketik nama desa..." oninput="cariAlamat('jemput')">
+            <button type="button" class="btn-lokasi" onclick="ambilLokasiSaya()">📍 Gunakan Lokasi Saya</button>
+            <div id="res-jemput" class="search-results"></div>
+        </div>
+
+        <div style="position: relative;">
+            <label>Desa Tujuan:</label>
+            <input type="text" id="tujuan" placeholder="Ketik nama desa..." oninput="cariAlamat('tujuan')">
+            <div id="res-tujuan" class="search-results"></div>
+        </div>
 
         <div class="box-tarif">
-            <span style="font-size: 13px;">Estimasi Total:</span>
+            <span style="font-size: 13px;">Total Tarif:</span>
             <span class="total-harga" id="tampilan-tarif">Rp0</span>
-            <small style="opacity: 0.7;">Minimal Rp8.000</small>
+            <small style="opacity: 0.7;">Min. Rp8.000 (0-2 KM)</small>
         </div>
         <button id="btn-pesan" onclick="prosesPesan()">PESAN SEKARANG</button>
     </div>
@@ -100,76 +108,135 @@
     <div id="tab-ppob" class="hidden">
         <div style="background: linear-gradient(45deg, #6f42c1, #0056b3); color: white; padding: 25px; border-radius: 15px; cursor: pointer; text-align: center;" onclick="window.open('https://link.speedcash.co.id/shopwarehouse', '_blank')">
             <h4>⚡ PULSA & PPOB</h4>
-            <p style="font-size:12px">Klik untuk isi Pulsa/Token otomatis</p>
+            <p>Klik untuk transaksi otomatis 24 Jam</p>
         </div>
     </div>
 
     <div class="review-section">
-        <p style="font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: center;">Apa Kata Mereka?</p>
-        <div class="review-container">
-            <div class="review-slide active">
-                <div class="stars">★★★★★</div>
-                <div class="review-text">"Paling cepet nek kon jastip sego jangkrik. Amanah tenan!"</div>
-                <span class="review-author">- Mas Agus, Wergu</span>
-            </div>
-            <div class="review-slide">
-                <div class="stars">★★★★★</div>
-                <div class="review-text">"Drivere sopan, hafal dalan tikus Kudus. Gak telat."</div>
-                <span class="review-author">- Mbak Siti, Jati</span>
-            </div>
-            <div class="review-slide">
-                <div class="stars">★★★★★</div>
-                <div class="review-text">"Isi pulsa neng kene langsung mlebu. Mantap!"</div>
-                <span class="review-author">- Kang Dul, Mejobo</span>
-            </div>
+        <h4 style="text-align:center; margin-bottom:10px;">Berikan Review Anda</h4>
+        <div class="review-form">
+            <input type="text" id="rev-nama" placeholder="Nama Anda (Wajib)" required>
+            <textarea id="rev-pesan" rows="2" placeholder="Tulis komentar..."></textarea>
+            <button onclick="simpanReview()" style="width:100%; margin-top:10px; padding:10px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">Kirim Review</button>
         </div>
+
+        <div id="review-list" class="review-list">
+            </div>
     </div>
 </div>
 
 <script>
-    // Theme & Greeting
+    // 1. TEMA & GREETING
     const jam = new Date().getHours();
     if (jam >= 18 || jam < 6) document.body.classList.add('dark-theme');
     document.getElementById('time-greeting').innerText = (jam >= 18 || jam < 6) ? "Selamat Malam, Lur!" : "Selamat Siang, Lur!";
 
-    // Review Slider Logic
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.review-slide');
-    setInterval(() => {
-        slides[currentSlide].classList.remove('active');
-        currentSlide = (currentSlide + 1) % slides.length;
-        slides[currentSlide].classList.add('active');
-    }, 4000);
+    // 2. LOGIKA MAPS & TARIF
+    let locJemput = null, locTujuan = null, jarakFinal = 0, searchTimeout = null;
 
-    // Tab & Loading
     function switchTab(t) {
         document.getElementById('tab-jasa').classList.toggle('hidden', t !== 'jasa');
         document.getElementById('tab-ppob').classList.toggle('hidden', t !== 'ppob');
         document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && t==='jasa') || (i===1 && t==='ppob')));
     }
 
-    function showLoading() {
-        const t = ["Sabar nggih...", "Lagi proses lur...", "Niki nembe diproses...", "Ojo lali mampir Menara..."];
-        document.getElementById('loading-text').innerText = t[Math.floor(Math.random() * t.length)];
-        document.getElementById('loading-overlay').style.display = 'flex';
+    async function cariAlamat(type) {
+        clearTimeout(searchTimeout);
+        const query = document.getElementById(type).value;
+        const resDiv = document.getElementById('res-' + type);
+        if (query.length < 3) return;
+        
+        searchTimeout = setTimeout(async () => {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}+Kudus&limit=5`);
+            const data = await response.json();
+            resDiv.innerHTML = '';
+            resDiv.style.display = 'block';
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'search-item';
+                div.innerText = item.display_name;
+                div.onclick = () => {
+                    document.getElementById(type).value = item.display_name;
+                    resDiv.style.display = 'none';
+                    if (type === 'jemput') locJemput = {lat: item.lat, lon: item.lon};
+                    else locTujuan = {lat: item.lat, lon: item.lon};
+                    if (locJemput && locTujuan) hitungRute();
+                };
+                resDiv.appendChild(div);
+            });
+        }, 500);
     }
 
-    // Tarif & Pesan (Simple Version for Demo)
-    let jarakFinal = 2.5; // Contoh jarak
+    async function ambilLokasiSaya() {
+        if (!navigator.geolocation) return alert("GPS tidak didukung!");
+        document.getElementById('jemput').value = "Mencari lokasi...";
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            locJemput = {lat: pos.coords.latitude, lon: pos.coords.longitude};
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${locJemput.lat}&lon=${locJemput.lon}`);
+            const data = await response.json();
+            document.getElementById('jemput').value = data.display_name;
+            if (locTujuan) hitungRute();
+        });
+    }
+
+    async function hitungRute() {
+        const url = `https://router.project-osrm.org/route/v1/driving/${locJemput.lon},${locJemput.lat};${locTujuan.lon},${locTujuan.lat}?overview=false`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes[0]) {
+            jarakFinal = (data.routes[0].distance / 1000).toFixed(1);
+            hitungTarif();
+        }
+    }
+
     function hitungTarif() {
-        const h = document.getElementById('layanan').selectedOptions[0].getAttribute('data-harga');
-        let total = (jarakFinal <= 2) ? 8000 : (jarakFinal * h);
+        const harga = document.getElementById('layanan').selectedOptions[0].getAttribute('data-harga');
+        let total = (jarakFinal <= 2) ? 8000 : (jarakFinal * harga);
         document.getElementById('tampilan-tarif').innerText = "Rp" + Math.round(total).toLocaleString('id-ID');
     }
-    hitungTarif();
 
     function prosesPesan() {
-        showLoading();
+        if (jarakFinal <= 0) return alert("Pilih rute dulu!");
+        document.getElementById('loading-overlay').style.display = 'flex';
         setTimeout(() => {
-            window.open(`https://wa.me/6285124569347?text=Halo Suruh Akudus!`);
+            const teks = encodeURIComponent(`*ORDER SURUH AKUDUS*\nLayanan: ${document.getElementById('layanan').value}\nJemput: ${document.getElementById('jemput').value}\nTujuan: ${document.getElementById('tujuan').value}\nJarak: ${jarakFinal} KM\nTotal: ${document.getElementById('tampilan-tarif').innerText}`);
+            window.open(`https://wa.me/6285124569347?text=${teks}`);
             document.getElementById('loading-overlay').style.display = 'none';
-        }, 1500);
+        }, 2000);
     }
+
+    // 3. LOGIKA REVIEW
+    function simpanReview() {
+        const nama = document.getElementById('rev-nama').value;
+        const pesan = document.getElementById('rev-pesan').value;
+
+        if (!nama || !pesan) return alert("Nama dan Pesan wajib diisi, Lur!");
+
+        const reviewBaru = { nama, pesan, tgl: new Date().toLocaleDateString() };
+        let reviews = JSON.parse(localStorage.getItem('suruh_reviews')) || [];
+        reviews.unshift(reviewBaru);
+        localStorage.setItem('suruh_reviews', JSON.stringify(reviews));
+
+        document.getElementById('rev-nama').value = '';
+        document.getElementById('rev-pesan').value = '';
+        tampilkanReview();
+    }
+
+    function tampilkanReview() {
+        const list = document.getElementById('review-list');
+        let reviews = JSON.parse(localStorage.getItem('suruh_reviews')) || [
+            {nama: "Mas Agus", pesan: "Ojeke cepet tenan, driver hafal dalan tikus Kudus.", tgl: "13/02/2024"},
+            {nama: "Mbak Siti", pesan: "Jastip sego jangkrik amanah, tekan omah isih anget.", tgl: "12/02/2024"}
+        ];
+
+        list.innerHTML = reviews.map(r => `
+            <div class="review-item">
+                <div class="rev-name">${r.nama} <small style="font-weight:normal; color:#888; font-size:10px;">• ${r.tgl}</small></div>
+                <div class="rev-text">"${r.pesan}"</div>
+            </div>
+        `).join('');
+    }
+    tampilkanReview();
 </script>
 </body>
 </html>
